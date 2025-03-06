@@ -1,0 +1,64 @@
+#  docker is a linux server
+
+services:
+  # there are three services www, db and phpmyadmin
+
+  #  www ia a public file which will be accessed or rendered
+  www:
+
+    # first db is loaded and then html page is shown 
+    depends_on:
+      - db
+    # image is a package(just like node_modules in node.js) here is apache server: local host
+    image: php:8.3.16-apache
+    ports:
+      #ports for your server 80 is the listner and 443 is for https 
+      - 80:80
+      - 443:443
+    # anything in my local path /var/www/html should be under www: on linux server
+    volumes:
+      - ./www:/var/www/html
+
+    #  command don't know but something which is installed
+    command: "/bin/sh -c 'docker-php-ext-install mysqli && apache2-foreground'"
+
+  #  this db is our database
+  db:
+    # package will be latest mysql packages
+    image: mysql:latest
+
+    # defining our environment variables
+    # MYSQL_ALLOW_EMPTY_PASSWORD is 1/0 which is true/false
+    environment:
+      MYSQL_DATABASE: demo
+      MYSQL_USER: demo
+      MYSQL_PASSWORD: 123456
+      MYSQL_ALLOW_EMPTY_PASSWORD: 1
+    volumes:
+      - .db/:/docker-entrypoint-initdb.d
+
+
+  # phpmyadmin is dbms
+  phpmyadmin:
+    depends_on:
+      - db
+    image: phpmyadmin:latest
+
+    # 81:80 → Maps port 80 inside the container to port 81 on the host machine.
+    # Inside the container, phpMyAdmin runs its web server on port 80.
+    # On your host machine, you access phpMyAdmin through port 81 (instead of the default 80).
+    ports:
+      - 81:80
+    environment:
+      PMA_HOST: db
+      PMA_PORT: 3306
+
+    # we have now set up db, dbms which is phpmyadmin and where it will show and accessed which www
+
+
+#  COMMAND TO RUN FILE :
+# use docker-compose up -d in cmd to run this file where docker-compose is the name of the file and up is command which runs that file
+
+
+# COMMAND TO STOP THE FILE:
+#  use docker-compose down -v to stop docker to run
